@@ -19,7 +19,7 @@
     "countries": {
       "title": "Countries",
       "type": "array",
-      "description": "Adzuna country codes to search. Keep this limited to the United States and Canada for this dataset.",
+      "description": "Adzuna country codes to search. This actor should remain limited to the United States and Canada.",
       "default": [
         "us",
         "ca"
@@ -33,7 +33,7 @@
     "searchQueries": {
       "title": "Search queries",
       "type": "array",
-      "description": "Role or hiring searches to run against Adzuna.",
+      "description": "Role/function searches to run against Adzuna for broad job discovery.",
       "default": [
         "software engineer",
         "sales",
@@ -58,7 +58,8 @@
       "type": "integer",
       "default": 50,
       "minimum": 1,
-      "maximum": 50
+      "maximum": 50,
+      "description": "Number of Adzuna jobs requested per API page. Adzuna caps this at 50, so the actor keeps the maximum at 50."
     },
     "maxJobAgeDays": {
       "title": "Maximum job age in days",
@@ -71,7 +72,8 @@
     "includeMediumConfidence": {
       "title": "Include medium confidence rows",
       "type": "boolean",
-      "default": true
+      "default": true,
+      "description": "When true, emit Medium confidence rows in addition to High and Very High. Low confidence rows are always excluded."
     },
     "enablePublicEnrichment": {
       "title": "Enable public web enrichment",
@@ -90,14 +92,14 @@
     "greenhouseBoardTokens": {
       "title": "Greenhouse board tokens",
       "type": "array",
-      "description": "Optional no-key Greenhouse public board tokens to ingest alongside Adzuna, e.g. company slugs used in boards-api.greenhouse.io URLs.",
+      "description": "Optional no-key Greenhouse public board tokens to ingest alongside Adzuna. These are public board identifiers, not API keys.",
       "default": [],
       "editor": "stringList"
     },
     "leverCompanySlugs": {
       "title": "Lever company slugs",
       "type": "array",
-      "description": "Optional no-key Lever company slugs to ingest alongside Adzuna, e.g. slugs used in api.lever.co public postings URLs.",
+      "description": "Optional no-key Lever company slugs to ingest alongside Adzuna. These are public posting identifiers, not API keys.",
       "default": [],
       "editor": "stringList"
     }
