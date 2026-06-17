@@ -6,6 +6,7 @@ import {
   isAmbiguousCompanyName,
   isFreshJob,
   isUsOrCanadaJob,
+  matchesIndustryKeywords,
   parseDuckDuckGoResults,
   scoreJob,
 } from '../src/main.js';
@@ -47,6 +48,14 @@ test('geographic filter rejects remote and out-of-scope roles', () => {
   assert.equal(isUsOrCanadaJob(job({ location: { display_name: 'Berlin, Germany' } }), 'de'), false);
 });
 
+
+
+test('industry keyword filter keeps matching industry jobs only', () => {
+  assert.equal(matchesIndustryKeywords(job({ description: 'Healthcare operations software for clinics.' }), ['healthcare']), true);
+  assert.equal(matchesIndustryKeywords(job({ description: 'Logistics operations platform.' }), ['healthcare']), false);
+  assert.equal(matchesIndustryKeywords(job(), []), true);
+});
+
 test('official website is never guessed from aggregators', () => {
   assert.equal(extractOfficialWebsite(job()), 'https://example-company.com');
   assert.equal(extractOfficialWebsite(job({ redirect_url: 'https://www.adzuna.com/details/123' })), null);
@@ -81,6 +90,8 @@ test('scoreJob can use public enrichment for website, description, and size evid
   assert.equal(row.official_company_website, 'https://example-robotics.com');
   assert.match(row.employee_range_evidence, /75-120 employees/);
   assert.match(row.source_urls, /example-robotics.com\/about/);
+  assert.equal(row.resource_urls.official_company_website, 'https://example-robotics.com');
+  assert.deepEqual(row.resource_urls.public_enrichment_urls, ['https://example-robotics.com/about']);
 });
 
 test('scoreJob excludes rows without company size evidence', () => {

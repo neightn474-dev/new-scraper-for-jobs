@@ -102,6 +102,20 @@
       "description": "Optional no-key Lever company slugs to ingest alongside Adzuna. These are public posting identifiers, not API keys.",
       "default": [],
       "editor": "stringList"
+    },
+    "industryKeywords": {
+      "title": "Industry keywords",
+      "type": "array",
+      "description": "Optional industry keywords used to keep only jobs whose title, company, location, or description mentions at least one keyword. Leave empty for all industries.",
+      "default": [],
+      "editor": "stringList"
+    },
+    "jobDiscoveryResourceUrls": {
+      "title": "Job discovery resource URLs",
+      "type": "array",
+      "description": "Optional explicit job-finding endpoint URLs to ingest for industry-specific discovery. Supports Greenhouse boards-api URLs and Lever postings URLs.",
+      "default": [],
+      "editor": "stringList"
     }
   },
   "required": [

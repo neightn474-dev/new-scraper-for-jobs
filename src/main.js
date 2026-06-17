@@ -44,6 +44,17 @@ export function isFreshJob(job, maxAgeDays, now = new Date()) {
   return ageMs >= 0 && ageMs <= maxAgeDays * 24 * 60 * 60 * 1000;
 }
 
+
+export function matchesIndustryKeywords(job, industryKeywords = []) {
+  const keywords = (industryKeywords || []).map((keyword) => String(keyword).trim().toLowerCase()).filter(Boolean);
+  if (!keywords.length) return true;
+  const text = [job?.title, job?.company?.display_name, job?.location?.display_name, job?.description]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
 export function extractEmployeeRangeFromText(text) {
   const source = String(text || '');
   const range = source.match(/\b(?:company size|team size|employees|headcount|team of)?\s*:?\s*(\d{1,4})\s*(?:-|to|–)\s*(\d{1,5})\s+(?:employees|people|team members|staff)\b/i);
@@ -261,6 +272,11 @@ export function scoreJob(job, country, maxAgeDays, includeMediumConfidence, enri
       `The role was posted on ${job.created}.`,
     ].join(' '),
     source_urls: [...new Set(sourceUrls)].join(', '),
+    resource_urls: {
+      discovery_source_url: job.redirect_url || null,
+      official_company_website: website,
+      public_enrichment_urls: [...new Set(enrichment.enrichmentSourceUrls || [])],
+    },
   };
 }
 
@@ -312,6 +328,57 @@ async function fetchConfiguredPublicJobs(input) {
   return jobs;
 }
 
+
+function greenhouseJobsFromPayload(payload, boardToken, sourceUrl) {
+  return (payload.jobs || []).map((job) => ({
+    id: `greenhouse-url:${boardToken}:${job.id}`,
+    source: 'Configured Greenhouse discovery URL',
+    title: job.title,
+    created: job.updated_at || null,
+    redirect_url: job.absolute_url || sourceUrl,
+    company: { display_name: humanizeSlug(boardToken) },
+    location: { display_name: job.location?.name || '' },
+    description: stripHtml(job.content || ''),
+  }));
+}
+
+function leverJobsFromPayload(payload, companySlug, sourceUrl) {
+  return (payload || []).map((job) => ({
+    id: `lever-url:${companySlug}:${job.id}`,
+    source: 'Configured Lever discovery URL',
+    title: job.text,
+    created: job.createdAt ? new Date(job.createdAt).toISOString() : null,
+    redirect_url: job.hostedUrl || job.applyUrl || sourceUrl,
+    company: { display_name: humanizeSlug(companySlug) },
+    location: { display_name: job.categories?.location || '' },
+    description: stripHtml([job.descriptionPlain, job.additionalPlain, job.lists?.map((list) => `${list.text} ${list.content}`).join(' ')].filter(Boolean).join(' ')),
+  }));
+}
+
+async function fetchJobsFromDiscoveryUrl(resourceUrl) {
+  const url = new URL(resourceUrl);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Configured job discovery URL failed: ${url.href} ${response.status} ${response.statusText}`);
+  const payload = await response.json();
+  if (url.hostname === 'boards-api.greenhouse.io') {
+    const boardToken = url.pathname.split('/').filter(Boolean).at(2);
+    return greenhouseJobsFromPayload(payload, boardToken, url.href);
+  }
+  if (url.hostname === 'api.lever.co') {
+    const companySlug = url.pathname.split('/').filter(Boolean).at(2);
+    return leverJobsFromPayload(payload, companySlug, url.href);
+  }
+  return [];
+}
+
+async function fetchConfiguredDiscoveryUrlJobs(input) {
+  const jobs = [];
+  for (const resourceUrl of input.jobDiscoveryResourceUrls || []) {
+    jobs.push(...await fetchJobsFromDiscoveryUrl(resourceUrl));
+  }
+  return jobs;
+}
+
 async function fetchAdzunaPage({ country, page, query, input }) {
   const url = new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}`);
   url.searchParams.set('app_id', input.adzunaAppId);
@@ -332,6 +399,7 @@ async function runActor() {
     const countries = (input.countries || ['us', 'ca']).map((country) => country.toLowerCase()).filter((country) => ALLOWED_COUNTRIES.has(country));
     const seen = new Set();
     const processJob = async (job, country) => {
+      if (!matchesIndustryKeywords(job, input.industryKeywords)) return;
       const enrichment = await enrichJobWithPublicSources(job, input);
       const row = scoreJob(job, country, input.maxJobAgeDays, input.includeMediumConfidence, enrichment);
       if (!row) return;
@@ -351,6 +419,10 @@ async function runActor() {
     }
 
     for (const job of await fetchConfiguredPublicJobs(input)) {
+      for (const country of countries) await processJob(job, country);
+    }
+
+    for (const job of await fetchConfiguredDiscoveryUrlJobs(input)) {
       for (const country of countries) await processJob(job, country);
     }
     log.info(`Finished hiring intelligence scrape with ${seen.size} accepted rows.`);

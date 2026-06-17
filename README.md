@@ -45,6 +45,22 @@ In addition to Adzuna, the actor can ingest:
 
 Those sources are optional and still pass through the same U.S./Canada, non-remote, mid-size, official-website, evidence, and confidence gates.
 
+
+## Job-finding URL section
+
+For industry-oriented collection, configure job discovery around explicit job-finding resources instead of relying only on broad Adzuna queries:
+
+| Job-finding resource | URL pattern / input | Best use | API key required |
+| --- | --- | --- | --- |
+| Adzuna search | `https://api.adzuna.com/v1/api/jobs/{country}/search/{page}` via `searchQueries` | Broad U.S./Canada discovery by role, function, or industry keyword. | Yes |
+| Greenhouse board token | `greenhouseBoardTokens: ["{token}"]` | Company-specific public Greenhouse jobs. | No |
+| Lever company slug | `leverCompanySlugs: ["{slug}"]` | Company-specific public Lever jobs. | No |
+| Explicit Greenhouse discovery URL | `jobDiscoveryResourceUrls: ["https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"]` | Precise endpoint-level Greenhouse ingestion for a target company/industry list. | No |
+| Explicit Lever discovery URL | `jobDiscoveryResourceUrls: ["https://api.lever.co/v0/postings/{slug}?mode=json"]` | Precise endpoint-level Lever ingestion for a target company/industry list. | No |
+| Industry keywords | `industryKeywords: ["healthcare", "logistics", "fintech"]` | Keeps only jobs whose title, company, location, or description matches at least one configured industry keyword. | No |
+
+Use `industryKeywords` with either Adzuna queries or explicit Greenhouse/Lever URLs when you want industry-specific datasets.
+
 ## Public enrichment
 
 When `enablePublicEnrichment` is true, the actor:
@@ -56,6 +72,25 @@ When `enablePublicEnrichment` is true, the actor:
 5. Extracts meta descriptions and visible text from those pages.
 6. Looks for employee-size evidence and hiring language in those public pages.
 7. Adds enrichment source URLs to the final row.
+
+
+## Scraped resource URL map
+
+The actor keeps each scraped resource explicit so runs are auditable:
+
+| Resource | URL pattern | Purpose | API key required |
+| --- | --- | --- | --- |
+| Adzuna search | `https://api.adzuna.com/v1/api/jobs/{country}/search/{page}` | Primary broad job discovery for U.S. and Canada roles. | Yes, Adzuna `app_id` and `app_key` |
+| DuckDuckGo HTML search | `https://duckduckgo.com/html/?q={company query}` | No-key public discovery of official company websites when source data does not provide one. | No |
+| Official company homepage | `{officialCompanyWebsite}` | Company description, company identity validation, and source URL evidence. | No |
+| Official company about page | `{officialCompanyWebsite}/about` | Company description and employee-size evidence. | No |
+| Official company company page | `{officialCompanyWebsite}/company` | Company description and employee-size evidence. | No |
+| Official company careers page | `{officialCompanyWebsite}/careers` | Hiring language and public hiring evidence. | No |
+| Official company jobs page | `{officialCompanyWebsite}/jobs` | Hiring language and public hiring evidence. | No |
+| Greenhouse public board | `https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true` | Optional no-key job discovery for configured public Greenhouse boards. | No |
+| Lever public postings | `https://api.lever.co/v0/postings/{slug}?mode=json` | Optional no-key job discovery for configured public Lever companies. | No |
+
+Each output row includes both a flat `source_urls` field and a structured `resource_urls` object with `discovery_source_url`, `official_company_website`, and `public_enrichment_urls`.
 
 ## Output fields
 
@@ -75,6 +110,7 @@ Each accepted row contains:
 - hiring signals
 - personalization-ready facts
 - source URLs
+- structured resource URLs by source type
 
 ## Confidence model
 
