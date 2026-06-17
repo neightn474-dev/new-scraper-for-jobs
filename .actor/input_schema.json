@@ -1,0 +1,125 @@
+{
+  "title": "Hiring intelligence input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "adzunaAppId": {
+      "title": "Adzuna App ID",
+      "type": "string",
+      "description": "Required Adzuna API application ID. Get your own credentials from Adzuna.",
+      "editor": "textfield"
+    },
+    "adzunaAppKey": {
+      "title": "Adzuna App Key",
+      "type": "string",
+      "description": "Required Adzuna API key. This actor does not ship with shared credentials.",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "countries": {
+      "title": "Countries",
+      "type": "array",
+      "description": "Adzuna country codes to search. This actor should remain limited to the United States and Canada.",
+      "default": [
+        "us",
+        "ca"
+      ],
+      "prefill": [
+        "us",
+        "ca"
+      ],
+      "editor": "stringList"
+    },
+    "searchQueries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "Role/function searches to run against Adzuna for broad job discovery.",
+      "default": [
+        "software engineer",
+        "sales",
+        "operations",
+        "customer success",
+        "marketing",
+        "finance",
+        "data analyst"
+      ],
+      "editor": "stringList"
+    },
+    "maxPagesPerQuery": {
+      "title": "Max pages per query/country",
+      "type": "integer",
+      "description": "Caps broad discovery volume to preserve quality and API budget.",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 20
+    },
+    "resultsPerPage": {
+      "title": "Results per page",
+      "type": "integer",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Number of Adzuna jobs requested per API page. Adzuna caps this at 50, so the actor keeps the maximum at 50."
+    },
+    "maxJobAgeDays": {
+      "title": "Maximum job age in days",
+      "type": "integer",
+      "description": "Stale jobs older than this threshold are excluded.",
+      "default": 30,
+      "minimum": 1,
+      "maximum": 90
+    },
+    "includeMediumConfidence": {
+      "title": "Include medium confidence rows",
+      "type": "boolean",
+      "default": true,
+      "description": "When true, emit Medium confidence rows in addition to High and Very High. Low confidence rows are always excluded."
+    },
+    "enablePublicEnrichment": {
+      "title": "Enable public web enrichment",
+      "type": "boolean",
+      "description": "Use no-key public web resources to discover/validate official websites, descriptions, careers evidence, and employee-size evidence.",
+      "default": true
+    },
+    "maxEnrichmentPages": {
+      "title": "Max public pages per company",
+      "type": "integer",
+      "description": "Limits no-key public web enrichment requests per discovered company.",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 5
+    },
+    "greenhouseBoardTokens": {
+      "title": "Greenhouse board tokens",
+      "type": "array",
+      "description": "Optional no-key Greenhouse public board tokens to ingest alongside Adzuna. These are public board identifiers, not API keys.",
+      "default": [],
+      "editor": "stringList"
+    },
+    "leverCompanySlugs": {
+      "title": "Lever company slugs",
+      "type": "array",
+      "description": "Optional no-key Lever company slugs to ingest alongside Adzuna. These are public posting identifiers, not API keys.",
+      "default": [],
+      "editor": "stringList"
+    },
+    "industryKeywords": {
+      "title": "Industry keywords",
+      "type": "array",
+      "description": "Optional industry keywords used to keep only jobs whose title, company, location, or description mentions at least one keyword. Leave empty for all industries.",
+      "default": [],
+      "editor": "stringList"
+    },
+    "jobDiscoveryResourceUrls": {
+      "title": "Job discovery resource URLs",
+      "type": "array",
+      "description": "Optional explicit job-finding endpoint URLs to ingest for industry-specific discovery. Supports Greenhouse boards-api URLs and Lever postings URLs.",
+      "default": [],
+      "editor": "stringList"
+    }
+  },
+  "required": [
+    "adzunaAppId",
+    "adzunaAppKey"
+  ]
+}
