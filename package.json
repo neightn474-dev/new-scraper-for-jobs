@@ -1,0 +1,15 @@
+{
+  "name": "us-canada-hiring-intelligence-actor",
+  "version": "1.0.0",
+  "description": "Apify actor that builds a high-confidence U.S. and Canada hiring intelligence dataset from Adzuna with explainable evidence.",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "apify": "^3.2.6"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,12 @@
+{
+  "actorSpecification": 1,
+  "name": "us-canada-hiring-intelligence",
+  "title": "U.S. + Canada Hiring Intelligence Dataset",
+  "description": "Finds mid-sized companies hiring in the United States and Canada using explainable hiring signals from Adzuna and verified source URLs.",
+  "version": "1.0",
+  "meta": {
+    "templateId": "js-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile"
+}
